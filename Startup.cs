@@ -11,14 +11,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetCoreLearnProj.Data.Model;
+using Microsoft.EntityFrameworkCore;
+using DotNetCoreLearnProj.Data;
+using DotNetCoreLearnProj.Data.Services;
 
 namespace DotNetCoreLearnProj
 {
     public class Startup
     {
+        public string ConnectionString { get; set; }
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ConnectionString = Configuration.GetConnectionString("DefaultConnectionString");
         }
 
         public IConfiguration Configuration { get; }
@@ -28,6 +34,15 @@ namespace DotNetCoreLearnProj
         {
 
             services.AddControllers();
+
+            //Configure DB context with SQL DB
+            services.AddDbContext<AppDbContext>(options => options.UseSqlServer(ConnectionString));
+
+            //configure the services
+            services.AddTransient<BookService>();
+            services.AddTransient<AuthorService>();
+            services.AddTransient<PublisherService>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DotNetCoreLearnProj", Version = "v1" });
@@ -54,6 +69,8 @@ namespace DotNetCoreLearnProj
             {
                 endpoints.MapControllers();
             });
+
+            //AppDbInitializer.Seed(app);
         }
     }
 }
